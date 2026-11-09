@@ -1,0 +1,229 @@
+:root {
+  --bg: #1d1b19;
+  --panel: #2a2724;
+  --text: #f0ebe3;
+  --muted: #a39a8c;
+  --accent: #f2b84b;
+  --yellow: #e8b923;
+  --white: #e9e6df;
+  --blue: #3f7fd9;
+  --green: #3c9a5a;
+  --red: #d44a45;
+  --purple: #8a52c7;
+  /* iPhone 노치·홈 인디케이터 영역 (viewport-fit=cover와 함께 동작) */
+  --safe-l: env(safe-area-inset-left, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-t: env(safe-area-inset-top, 0px);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font-family: system-ui, -apple-system, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', sans-serif;
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent; /* 탭할 때 파란/회색 박스 제거 */
+}
+[hidden] { display: none !important; }
+button { font: inherit; cursor: pointer; touch-action: manipulation; color: inherit; }
+button:disabled { opacity: .6; cursor: default; }
+
+/* 상단 탭 */
+#tabs {
+  display: flex; align-items: center; gap: 4px; background: #181614; border-bottom: 1px solid #3a342d;
+  padding: calc(8px + var(--safe-t)) calc(16px + var(--safe-r)) 8px calc(16px + var(--safe-l));
+  position: sticky; top: 0; z-index: 5;
+}
+#tabs .brand { color: var(--accent); font-weight: 800; margin-right: auto; }
+#tabs button { background: none; border: 0; color: var(--muted); padding: 8px 12px; border-radius: 6px; min-height: 40px; }
+#tabs button[aria-selected="true"] { background: var(--panel); color: var(--text); font-weight: 700; }
+
+/* 로비 */
+#lobby { max-width: 360px; margin: 10vh auto; padding: 0 16px; text-align: center; }
+#lobby h1 { margin: 0; font-size: 2.2rem; color: var(--accent); }
+.sub { color: var(--muted); margin-bottom: 24px; }
+#join-form { display: flex; flex-direction: column; gap: 12px; text-align: left; }
+#join-form input {
+  width: 100%; padding: 12px 10px; margin-top: 4px; border-radius: 6px;
+  border: 1px solid #4a443d; background: var(--panel); color: var(--text);
+  font: inherit; font-size: 16px; /* 16px 미만이면 iOS가 포커스 때 화면을 확대한다 */
+  -webkit-appearance: none; appearance: none;
+}
+#join-form button, #next {
+  padding: 12px; border: 0; border-radius: 6px; background: var(--accent); color: #222; font-weight: 700; min-height: 44px;
+}
+.error { color: #ff8a80; min-height: 1.2em; }
+fieldset.mode { border: 1px solid #3a342d; border-radius: 8px; padding: 10px 12px 12px; margin: 4px 0 0; display: flex; flex-direction: column; gap: 10px; }
+fieldset.mode legend { color: var(--accent); font-weight: 700; padding: 0 6px; }
+.levels { display: flex; gap: 8px; }
+.levels label { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; border: 1px solid #4a443d; border-radius: 6px; cursor: pointer; }
+.levels label:has(input:checked) { border-color: var(--accent); background: rgba(242, 184, 75, .1); }
+.levels input { accent-color: var(--accent); width: 18px; height: 18px; margin: 0; }
+#solo-btn { padding: 12px; border: 0; border-radius: 6px; background: #4a443d; color: var(--text); font-weight: 700; min-height: 44px; }
+#leave-wrap { text-align: center; margin-top: 20px; }
+button.link { background: none; border: 0; color: var(--muted); text-decoration: underline; padding: 10px; min-height: 44px; }
+.note { color: var(--muted); font-size: .8rem; margin-top: 12px; }
+.muted { color: var(--muted); }
+button.ghost { background: none; border: 1px solid #4a443d; color: var(--text); padding: 10px 14px; border-radius: 6px; min-height: 44px; }
+
+/* 게임 화면 */
+#game {
+  max-width: 880px; margin: 0 auto;
+  padding: 8px calc(12px + var(--safe-r)) calc(16px + var(--safe-b)) calc(12px + var(--safe-l));
+}
+#topbar { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 6px 0; }
+#round-label { color: var(--muted); font-size: .8rem; }
+#status { font-weight: 700; }
+#status.mine { color: var(--accent); }
+#scores { display: flex; flex-direction: column; gap: 2px; align-items: flex-end; font-size: .9rem; }
+.score-row { display: flex; gap: 8px; align-items: baseline; }
+.score-row .who { color: var(--muted); max-width: 7em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.score-row b { min-width: 2.5em; text-align: right; }
+.score-row .total { color: var(--accent); font-size: .8rem; min-width: 5.5em; text-align: right; }
+
+#board { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; } /* 실제 열 수는 app.js가 색 개수로 지정 */
+.col { background: var(--panel); border-radius: 8px; padding: 4px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.zone { min-height: 118px; position: relative; border-radius: 6px; padding: 2px; }
+.zone.opp { display: flex; flex-direction: column-reverse; justify-content: flex-start; } /* 상대 원정대는 가운데에서 위로 쌓임 */
+.zone.mine { display: flex; flex-direction: column; }
+.zone.discard { min-height: 62px; background: #1f1c1a; border: 1px dashed #4a443d; display: flex; align-items: center; justify-content: center; }
+.zone .score { position: absolute; right: 4px; bottom: 2px; font-size: .75rem; color: var(--muted); }
+.zone.opp .score { top: 2px; bottom: auto; }
+.zone.target { outline: 2px solid var(--accent); outline-offset: -2px; cursor: pointer; background: #3a3327; }
+@media (hover: hover) { .zone.target:hover { background: #4a4029; } } /* 터치 기기에서 hover가 남지 않도록 */
+
+/* 이번 라운드 최고 원정대 */
+.zone.best { box-shadow: inset 0 0 0 2px var(--accent); background: rgba(242, 184, 75, .08); }
+.zone.best .score { color: var(--accent); font-weight: 800; }
+
+.card {
+  position: relative; border-radius: 6px; border: 2px solid rgba(0,0,0,.35);
+  color: #fff; text-align: center; font-weight: 800; background: var(--c);
+  -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; /* 길게 눌러도 메뉴 안 뜨게 */
+}
+.card.yellow { --c: var(--yellow); color: #3a2f00; }
+.card.white { --c: var(--white); color: #333; }
+.card.blue { --c: var(--blue); }
+.card.green { --c: var(--green); }
+.card.red { --c: var(--red); }
+.card.purple { --c: var(--purple); }
+.stack { display: flex; flex-direction: column; }
+.zone.opp .stack { flex-direction: column-reverse; }
+.stack .card { height: 20px; line-height: 16px; font-size: .8rem; margin-bottom: -2px; }
+.stack .card:last-child { height: 34px; line-height: 30px; margin-bottom: 0; }
+.stack .card .tag, .discard .card .tag { display: none; } /* 작은 카드에선 $만 표시 */
+.discard .card { width: 100%; height: 48px; line-height: 44px; font-size: 1.2rem; }
+.discard .count { position: absolute; left: 6px; top: 2px; font-size: .7rem; color: var(--muted); }
+.empty-label { color: #6b6358; font-size: .75rem; text-align: center; }
+
+/* 손패: 화면 폭에 맞춰 한 줄로 줄어든다 */
+#hand-wrap { margin-top: 12px; }
+#hand { display: flex; gap: 6px; justify-content: center; }
+#hand .card {
+  flex: 0 1 62px; min-width: 0; aspect-ratio: 62 / 92;
+  display: flex; align-items: center; justify-content: center;
+  font-size: clamp(1rem, 5vw, 1.6rem); cursor: pointer; transition: transform .1s;
+  touch-action: manipulation; /* 빠른 연속 탭에서 확대 방지 */
+}
+#hand .card.selected { transform: translateY(-12px); outline: 3px solid var(--accent); }
+#hand .card.unplayable { opacity: .85; }
+.card .tag { position: absolute; top: 2px; left: 0; right: 0; font-size: .65rem; line-height: 1; }
+#hint { text-align: center; color: var(--muted); font-size: .9rem; min-height: 1.4em; margin-top: 8px; }
+
+#side { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
+#deck {
+  padding: 10px 20px; min-height: 44px; border-radius: 8px; border: 2px solid #4a443d; background: #3a342d; color: var(--text); font-weight: 700;
+}
+#deck.target { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+#opp-info { color: var(--muted); font-size: .9rem; }
+#show-result { padding: 10px 14px; min-height: 44px; border: 0; border-radius: 6px; background: var(--accent); color: #222; font-weight: 700; }
+
+/* 결과 창 */
+#result {
+  position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 10;
+  display: flex; align-items: center; justify-content: center;
+  padding: var(--safe-t) var(--safe-r) var(--safe-b) var(--safe-l);
+}
+#result .box {
+  background: var(--panel); padding: 24px 28px; border-radius: 12px; text-align: center;
+  width: calc(100% - 32px); max-width: 420px;
+  max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); /* iOS 주소창 높이 반영 */
+  overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+}
+#result h2 { margin: 0 0 8px; color: var(--accent); }
+#result h3 { font-size: .9rem; color: var(--muted); margin: 16px 0 6px; }
+#result-sub { color: var(--muted); margin: 0 0 12px; font-size: .9rem; }
+.actions { display: flex; gap: 8px; justify-content: center; margin-top: 16px; }
+.tbl { width: 100%; border-collapse: collapse; font-size: .9rem; }
+.tbl th, .tbl td { padding: 6px 8px; text-align: right; border-bottom: 1px solid #3a342d; white-space: nowrap; }
+.tbl th:first-child, .tbl td:first-child { text-align: left; }
+.tbl th { color: var(--muted); font-weight: 600; }
+.tbl tr.sum td { font-weight: 800; border-top: 2px solid #4a443d; }
+.tbl tr.current td { color: var(--accent); }
+.tbl td.best-cell { color: var(--accent); font-weight: 800; }
+.dot { display: inline-block; width: .7em; height: .7em; border-radius: 50%; margin-right: 6px; background: var(--c); }
+.dot.yellow { --c: var(--yellow); } .dot.white { --c: var(--white); } .dot.blue { --c: var(--blue); }
+.dot.green { --c: var(--green); } .dot.red { --c: var(--red); } .dot.purple { --c: var(--purple); }
+
+/* 대전 기록 탭 */
+#view-history {
+  max-width: 880px; margin: 0 auto;
+  padding: 8px calc(16px + var(--safe-r)) calc(32px + var(--safe-b)) calc(16px + var(--safe-l));
+}
+.history-head { display: flex; justify-content: space-between; align-items: center; }
+#view-history h3 { color: var(--muted); font-size: .95rem; margin: 20px 0 8px; }
+.scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; } /* 통계 표는 표 안에서만 가로 스크롤 */
+#stats-table td.name { font-weight: 700; }
+#stats-table th:first-child, #stats-table td:first-child { position: sticky; left: 0; background: var(--bg); z-index: 1; } /* 가로 스크롤 시 이름 고정 */
+.match { background: var(--panel); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; }
+.match-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px; }
+.match-head .win { color: var(--accent); font-weight: 700; }
+.match-head .meta { color: var(--muted); font-size: .8rem; margin-left: auto; }
+.rounds { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.round-chip { font-size: .8rem; color: var(--muted); background: #1f1c1a; padding: 2px 8px; border-radius: 10px; }
+.round-chip .dot { margin: 0 2px; }
+.round-chip .vs { margin: 0 2px; }
+
+#toast {
+  position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(18px + var(--safe-b)); z-index: 20;
+  background: #b3392f; color: #fff; padding: 8px 16px; border-radius: 6px; max-width: calc(100% - 32px); text-align: center;
+  opacity: 0; transition: opacity .2s; pointer-events: none;
+}
+#toast.show { opacity: 1; }
+
+/* 휴대폰 세로 */
+@media (max-width: 560px) {
+  #game { padding-left: calc(8px + var(--safe-l)); padding-right: calc(8px + var(--safe-r)); }
+  #board { gap: 4px; }
+  .col { padding: 2px; border-radius: 6px; }
+  .zone { min-height: 96px; }
+  .zone.discard { min-height: 52px; }
+  .discard .card { height: 40px; line-height: 36px; font-size: 1rem; }
+  .discard .count { left: 2px; font-size: .6rem; }
+  .empty-label { font-size: .6rem; }
+  .stack .card { font-size: .7rem; border-width: 1px; }
+  .zone .score { font-size: .65rem; right: 2px; }
+  #hand { gap: 4px; }
+  #hand .card.selected { transform: translateY(-8px); }
+  #status { font-size: .95rem; }
+  #result .box { padding: 18px 14px; }
+  .tbl th, .tbl td { padding: 6px 4px; }
+  #tabs { padding-left: calc(10px + var(--safe-l)); padding-right: calc(10px + var(--safe-r)); }
+}
+/* 휴대폰 가로: 높이가 낮으므로 원정대 칸을 줄인다 */
+@media (max-height: 500px) and (orientation: landscape) {
+  #tabs { position: static; padding-top: calc(2px + var(--safe-t)); padding-bottom: 2px; }
+  #tabs button { min-height: 32px; padding: 4px 10px; }
+  #topbar { padding: 2px 0; }
+  #game { padding-top: 2px; }
+  .zone { min-height: 52px; }
+  .zone.discard { min-height: 36px; }
+  .discard .card { height: 30px; line-height: 26px; font-size: .9rem; }
+  #side { margin-top: 6px; }
+  #deck, #show-result { min-height: 36px; padding: 4px 16px; }
+  #hand-wrap { margin-top: 6px; }
+  #hand .card { flex-basis: 46px; }
+  #hint { min-height: 0; margin-top: 4px; font-size: .8rem; }
+  #lobby { margin: 4vh auto; }
+}

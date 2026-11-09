@@ -1,0 +1,29 @@
+{
+  "name": "Lost Cities 혼자 하기",
+  "short_name": "Lost Cities",
+  "description": "컴퓨터와 1:1 원정 카드게임 (3라운드 합산, 오프라인)",
+  "lang": "ko",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#1d1b19",
+  "theme_color": "#181614",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
