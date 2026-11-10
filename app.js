@@ -1,7 +1,34 @@
 'use strict';
 // 클라이언트: 서버가 보내준 state를 그리기만 한다. 규칙 판정은 모두 서버가 한다.
-// 색 목록·순서는 서버 state(game.colors)를 따른다. 여기는 표시 이름만.
-const COLOR_KO = { yellow: '노랑', white: '하양', blue: '파랑', green: '초록', red: '빨강', purple: '보라' };
+// 색 목록·순서는 서버 state(game.colors)를 따른다. 여기는 색 → 성계 표시(이름·아이콘)만.
+// 게임 용어: 원정대 = 항로, 버린 더미 = 중고 시장, 덱 = 탐사 덱, 투자 카드 = 투자 계약
+const SECTORS = {
+  yellow: { name: '태양권', short: '태양' },
+  white: { name: '빙결 위성', short: '빙결' },
+  blue: { name: '해양 행성', short: '해양' },
+  green: { name: '테라포밍 행성', short: '테라' },
+  red: { name: '화산 행성', short: '화산' },
+  purple: { name: '성운', short: '성운' },
+};
+const sectorName = (c) => (SECTORS[c] ? SECTORS[c].name : c);
+const sectorShort = (c) => (SECTORS[c] ? SECTORS[c].short : c);
+
+// 성계 아이콘 (24×24, 선 = currentColor). 정적 문자열만 innerHTML로 넣는다.
+const ICONS = {
+  yellow: '<circle cx="12" cy="12" r="4.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/>',
+  white: '<path d="M12 2v20M3.3 7l17.4 10M3.3 17 20.7 7"/><path d="M9.5 3.5 12 6l2.5-2.5M9.5 20.5 12 18l2.5 2.5"/>',
+  blue: '<circle cx="12" cy="12" r="8.5"/><path d="M4.5 10.5c2-1.5 3.5 1.5 5.5 0s3.5 1.5 5.5 0 2.5-.5 3.5 0M4.5 14.5c2-1.5 3.5 1.5 5.5 0s3.5 1.5 5.5 0 2.5-.5 3.5 0"/>',
+  green: '<path d="M5 19C5 10 11 4 20 4c0 9-6 15-15 15z"/><path d="M5 19 14 10"/>',
+  red: '<path d="M2 20 9 9h6l7 11z"/><path d="M9 9l3 3 3-3M12 6V2M9.5 4.5 8 3M14.5 4.5 16 3"/>',
+  purple: '<ellipse cx="12" cy="13" rx="9.5" ry="3.8" transform="rotate(-24 12 13)"/><circle class="fill" cx="12" cy="13" r="2.4"/><path class="fill" d="m18 1.5.7 1.6 1.6.7-1.6.7-.7 1.6-.7-1.6-1.6-.7 1.6-.7zM5 18l.5 1.1 1.1.5-1.1.5L5 21.2l-.5-1.1-1.1-.5 1.1-.5z"/>',
+};
+
+function iconEl(color) {
+  const span = document.createElement('span');
+  span.className = 'art';
+  span.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[color] || ''}</svg>`;
+  return span;
+}
 
 const $ = (id) => document.getElementById(id);
 
@@ -12,7 +39,7 @@ const OFFLINE = !!window.LCEngine;
 const joinStorage = () => (OFFLINE ? localStorage : sessionStorage);
 if (OFFLINE) {
   $('friend-mode').hidden = true;
-  $('lobby-sub').textContent = '컴퓨터와 1:1 · 3라운드 합산 · 인터넷 없이 플레이';
+  $('lobby-sub').textContent = '우주 개척 카드게임 · 컴퓨터와 1:1 · 3라운드 합산 · 인터넷 없이 플레이';
   $('lobby-note').textContent = '기록은 이 기기에만 저장됩니다.';
 }
 
@@ -21,6 +48,8 @@ let state = null; // 마지막으로 받은 서버 메시지
 let selectedId = null;
 let joinInfo = null;
 let resultHidden = false; // 결과 창을 닫고 보드를 보는 중
+let undoDeadline = 0; // 무르기 버튼을 감출 시각 (0이면 무르기 불가). 서버판 전용.
+let undoTicker = null;
 let lastRoundKey = null; // 라운드가 바뀌면 resultHidden 초기화
 
 // ---------- 공통 ----------
@@ -36,9 +65,11 @@ function el(tag, attrs = {}, ...children) {
 
 const signed = (n) => (n > 0 ? `+${n}` : String(n));
 
-function toast(msg) {
+// kind: 'error'(빨강, 기본) | 'info'(알림)
+function toast(msg, kind) {
   const t = $('toast');
   t.textContent = msg;
+  t.classList.toggle('info', kind === 'info');
   t.classList.add('show');
   clearTimeout(toast.t);
   toast.t = setTimeout(() => t.classList.remove('show'), 2200);
@@ -90,6 +121,10 @@ function connect() {
       } else toast(msg.message);
       return;
     }
+    if (msg.type === 'notice') {
+      toast(msg.message, 'info');
+      return;
+    }
     if (msg.type === 'state') {
       const prevTurn = state && state.game && state.game.myTurn;
       state = msg;
@@ -99,8 +134,10 @@ function connect() {
         saveJoin();
       }
       if (!msg.game || !msg.game.myTurn || msg.game.phase !== 'play') selectedId = null;
-      if (state.game && state.game.myTurn && !prevTurn) document.title = '● 내 차례 - Lost Cities';
-      else if (!state.game || !state.game.myTurn) document.title = 'Lost Cities';
+      if (state.game && state.game.myTurn && !prevTurn) document.title = '● 내 차례 - 프론티어 식스';
+      else if (!state.game || !state.game.myTurn) document.title = '프론티어 식스';
+      // 무르기 남은 시간: 서버가 보낸 시점 기준이므로 받은 순간부터 로컬 시계로 센다
+      undoDeadline = msg.undo && msg.undo.leftMs > 0 ? Date.now() + msg.undo.leftMs : 0;
       render();
     }
   };
@@ -198,7 +235,9 @@ $('leave').addEventListener('click', () => {
   selectedId = null;
   lastRoundKey = null;
   try { joinStorage().removeItem('lc-join'); } catch {}
-  document.title = 'Lost Cities';
+  document.title = '프론티어 식스';
+  undoDeadline = 0;
+  renderUndo();
   $('game').hidden = true;
   $('result').hidden = true;
   $('lobby').hidden = false;
@@ -222,12 +261,39 @@ function send(msg) {
 }
 
 // ---------- 게임 화면 ----------
+// 트럼프식 카드: 왼쪽 위·오른쪽 아래 모서리 숫자 + 가운데 성계 아이콘. 투자 계약은 $.
+// 항로에 겹쳐 쌓이면 CSS가 왼쪽 위 숫자만 보이게 한다.
 function cardEl(card, extraClass = '') {
-  const node = el('div', { class: `card ${card.color} ${extraClass}`.trim(), title: `${COLOR_KO[card.color]} ${card.value === 0 ? '투자' : card.value}` },
-    card.value === 0 ? '$' : String(card.value));
-  if (card.value === 0) node.append(el('span', { class: 'tag' }, '투자'));
-  return node;
+  const wager = card.value === 0;
+  const label = wager ? '$' : String(card.value);
+  const cls = `card ${card.color}${wager ? ' wager' : ''} ${extraClass}`.trim();
+  return el('div', { class: cls, title: `${sectorName(card.color)} · ${wager ? '투자 계약' : `${card.value}단계`}` },
+    el('span', { class: 'idx tl' }, label),
+    iconEl(card.color),
+    wager ? el('span', { class: 'band' }, '투자') : null,
+    el('span', { class: 'idx br' }, label)
+  );
 }
+
+// 무르기 버튼 (서버판 전용 — 오프라인판 state에는 undo가 없어 항상 숨김)
+function renderUndo() {
+  const btn = $('undo');
+  const left = undoDeadline - Date.now();
+  if (left <= 0) {
+    btn.hidden = true;
+    clearInterval(undoTicker);
+    undoTicker = null;
+    return;
+  }
+  btn.hidden = false;
+  btn.textContent = `↶ 무르기 ${Math.ceil(left / 1000)}`;
+  if (!undoTicker) undoTicker = setInterval(renderUndo, 200);
+}
+$('undo').addEventListener('click', () => {
+  undoDeadline = 0;
+  renderUndo();
+  send({ type: 'undo' });
+});
 
 function colorDot(color) {
   return el('span', { class: `dot ${color}` });
@@ -297,11 +363,12 @@ function render() {
     ));
   }
 
-  // 덱
+  // 탐사 덱 (카드 뒷면 모양)
   const deck = $('deck');
   deck.hidden = false;
-  deck.textContent = `덱 ${g.deckCount}장`;
-  deck.className = inDraw ? 'target' : '';
+  deck.replaceChildren(el('span', { class: 'deck-label' }, '탐사 덱'), el('b', {}, `${g.deckCount}`));
+  deck.className = `card-back${inDraw ? ' target' : ''}`;
+  deck.setAttribute('aria-label', `탐사 덱 ${g.deckCount}장${inDraw ? ', 눌러서 뽑기' : ''}`);
   deck.onclick = inDraw ? () => send({ type: 'draw', source: 'deck' }) : null;
   $('opp-info').textContent = `${state.names.opp} 손패 ${g.oppHandCount}장`;
   $('show-result').hidden = !(g.over && resultHidden);
@@ -319,6 +386,7 @@ function render() {
   }
 
   $('hint').textContent = hintText(g, selected, inPlay, inDraw);
+  renderUndo();
   renderResult(g, m, COLORS);
 }
 
@@ -328,7 +396,7 @@ function expeditionZone(cards, who, score, isBest) {
   cards.forEach((c) => stack.append(cardEl(c)));
   zone.append(stack);
   if (cards.length) {
-    zone.append(el('span', { class: 'score', title: isBest ? '이번 라운드 최고 원정대' : '' }, `${isBest ? '★ ' : ''}${signed(score)}`));
+    zone.append(el('span', { class: 'score', title: isBest ? '이번 라운드 최고 항로' : '' }, `${isBest ? '★ ' : ''}${signed(score)}`));
   }
   return zone;
 }
@@ -348,7 +416,7 @@ function discardZone(color, g, selected, inDraw) {
   if (pile.length) {
     zone.append(cardEl(pile[pile.length - 1]), el('span', { class: 'count' }, `${pile.length}장`));
   } else {
-    zone.append(el('span', { class: 'empty-label' }, `${COLOR_KO[color]} 버림`));
+    zone.append(el('span', { class: 'empty-label' }, `${sectorShort(color)}\n시장`));
   }
   if (g.myTurn && g.phase === 'play' && selected && selected.color === color) {
     zone.classList.add('target');
@@ -362,11 +430,11 @@ function discardZone(color, g, selected, inDraw) {
 
 function hintText(g, selected, inPlay, inDraw) {
   if (g.over) return '';
-  if (inDraw) return '덱 또는 버린 더미(방금 버린 색 제외)에서 한 장 뽑으세요.';
+  if (inDraw) return '탐사 덱 또는 중고 시장(방금 내놓은 곳 제외)에서 한 장 가져오세요.';
   if (inPlay) {
-    if (!selected) return '손패에서 카드를 고르세요. ★는 이번 라운드 최고 원정대입니다.';
-    const where = g.playableIds.includes(selected.id) ? '내 원정대에 놓거나' : '(원정대에 놓을 수 없음)';
-    return `${COLOR_KO[selected.color]} ${selected.value || '투자'} — ${where} 가운데 버린 더미에 버리세요.`;
+    if (!selected) return '손패에서 카드를 고르세요. ★는 이번 라운드 최고 항로입니다.';
+    const where = g.playableIds.includes(selected.id) ? '내 항로에 놓거나' : '(항로에 놓을 수 없음)';
+    return `${sectorName(selected.color)} ${selected.value ? `${selected.value}단계` : '투자 계약'} — ${where} 가운데 시장에 내놓으세요.`;
   }
   return '';
 }
@@ -391,10 +459,10 @@ function renderResult(g, m, COLORS) {
 
   // 이번 라운드 색별 점수 (최고 원정대 ★ 강조)
   const rt = $('round-table');
-  rt.replaceChildren(el('tr', {}, el('th', {}, '원정대'), el('th', {}, state.names.me), el('th', {}, state.names.opp)));
+  rt.replaceChildren(el('tr', {}, el('th', {}, '항로'), el('th', {}, state.names.me), el('th', {}, state.names.opp)));
   for (const c of COLORS) {
     rt.append(el('tr', {},
-      el('td', {}, colorDot(c), COLOR_KO[c]),
+      el('td', {}, colorDot(c), sectorName(c)),
       scoreCell(last.meByColor[c], g.myExpeditions[c].length, last.meBest.includes(c)),
       scoreCell(last.oppByColor[c], g.oppExpeditions[c].length, last.oppBest.includes(c))
     ));
@@ -454,7 +522,7 @@ $('refresh-history').onclick = loadHistory;
 function renderStats(stats) {
   const t = $('stats-table');
   t.replaceChildren(el('tr', {},
-    ...['플레이어', '경기', '승', '무', '패', '승률', '평균 합계', '최고 합계', '최고 라운드', '최고 원정대', '주력 색'].map((h) => el('th', {}, h))
+    ...['플레이어', '경기', '승', '무', '패', '승률', '평균 합계', '최고 합계', '최고 라운드', '최고 항로', '주력 성계'].map((h) => el('th', {}, h))
   ));
   for (const s of stats) {
     t.append(el('tr', {},
@@ -468,7 +536,7 @@ function renderStats(stats) {
       el('td', {}, String(s.bestTotal)),
       el('td', {}, String(s.bestRound)),
       s.bestExpedition ? el('td', {}, colorDot(s.bestExpedition.color), signed(s.bestExpedition.score)) : el('td', { class: 'muted' }, '–'),
-      s.favoriteColor ? el('td', {}, colorDot(s.favoriteColor), COLOR_KO[s.favoriteColor] || s.favoriteColor) : el('td', { class: 'muted' }, '–')
+      s.favoriteColor ? el('td', {}, colorDot(s.favoriteColor), sectorName(s.favoriteColor)) : el('td', { class: 'muted' }, '–')
     ));
   }
 }
@@ -486,7 +554,7 @@ function renderMatches(matches) {
       // 라운드 최고 원정대 색 (양쪽 다 없으면 생략)
       if (r.best[0].length || r.best[1].length) {
         chip.append(' ★', ...r.best[0].map(colorDot), el('span', { class: 'vs' }, '/'), ...r.best[1].map(colorDot));
-        chip.title = '라운드 최고 원정대 (왼쪽 / 오른쪽 플레이어)';
+        chip.title = '라운드 최고 항로 (왼쪽 / 오른쪽 플레이어)';
       }
       rounds.append(chip);
     });

@@ -1,6 +1,6 @@
 // 자동 생성 파일 (scripts/build-offline.js). 직접 고치지 말 것.
 'use strict';
-const CACHE = 'lost-cities-9cb24c79b0';
+const CACHE = 'lost-cities-4f3764125a';
 const FILES = ["./","index.html","app.js","style.css","engine.js","manifest.webmanifest","icon-192.png","icon-512.png"];
 
 self.addEventListener('install', (e) => {

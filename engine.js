@@ -14,7 +14,7 @@
   }
 defs["rules"] = function (module, exports, require) {
 'use strict';
-// Lost Cities 규칙 엔진 (순수 함수, I/O 없음)
+// 프론티어 식스 규칙 엔진 (Lost Cities 계열 규칙) (순수 함수, I/O 없음)
 // 카드 값: 0 = 투자(wager) 카드, 2~10 = 숫자 카드
 
 // 기본 5색 + 확장판 보라. 클라이언트도 state의 색 순서를 그대로 쓰므로 여기만 고치면 된다.
@@ -117,7 +117,7 @@ function playCard(game, p, cardId, target) {
 
   if (target === 'expedition') {
     if (!canPlayOnExpedition(game.expeditions[p][card.color], card)) {
-      return fail('그 원정대에는 놓을 수 없는 카드입니다.');
+      return fail('그 항로에는 놓을 수 없는 카드입니다.');
     }
     game.hands[p].splice(idx, 1);
     game.expeditions[p][card.color].push(card);
@@ -141,11 +141,11 @@ function drawCard(game, p, source) {
 
   let card;
   if (source === 'deck') {
-    if (game.deck.length === 0) return fail('덱이 비었습니다.');
+    if (game.deck.length === 0) return fail('탐사 덱이 비었습니다.');
     card = game.deck.pop();
   } else if (COLORS.includes(source)) {
-    if (source === game.lastDiscard) return fail('방금 버린 더미에서는 뽑을 수 없습니다.');
-    if (game.discards[source].length === 0) return fail('비어 있는 버린 더미입니다.');
+    if (source === game.lastDiscard) return fail('방금 내놓은 시장에서는 바로 가져올 수 없습니다.');
+    if (game.discards[source].length === 0) return fail('비어 있는 시장입니다.');
     card = game.discards[source].pop();
   } else {
     return fail('알 수 없는 뽑기 대상입니다.');

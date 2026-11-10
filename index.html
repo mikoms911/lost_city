@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#181614">
+  <meta name="theme-color" content="#0b0d14">
   <meta name="format-detection" content="telephone=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>Lost Cities</title>
+  <title>프론티어 식스</title>
   <link rel="stylesheet" href="style.css">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icon-192.png">
@@ -16,15 +16,15 @@
 </head>
 <body>
   <nav id="tabs" role="tablist">
-    <span class="brand">Lost Cities</span>
+    <span class="brand">Frontier Six</span>
     <button type="button" role="tab" data-tab="play" aria-selected="true">게임</button>
     <button type="button" role="tab" data-tab="history" aria-selected="false">대전 기록</button>
   </nav>
 
   <main id="view-play">
     <section id="lobby">
-      <h1>Lost Cities</h1>
-      <p class="sub" id="lobby-sub">2인용 온라인 원정 카드게임 · 3라운드 합산</p>
+      <h1>프론티어 식스</h1>
+      <p class="sub" id="lobby-sub">여섯 성계로 항로를 넓히는 우주 개척 카드게임 · 1:1 · 3라운드 합산</p>
       <form id="join-form" novalidate>
         <label>이름 <input id="name" maxlength="12" required autocomplete="off"></label>
 
@@ -60,6 +60,7 @@
 
       <div id="side">
         <button id="deck" type="button"></button>
+        <button id="undo" type="button" hidden></button>
         <div id="opp-info"></div>
         <button id="show-result" type="button" hidden>결과 보기</button>
       </div>

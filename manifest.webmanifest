@@ -1,13 +1,13 @@
 {
-  "name": "Lost Cities 혼자 하기",
-  "short_name": "Lost Cities",
-  "description": "컴퓨터와 1:1 원정 카드게임 (3라운드 합산, 오프라인)",
+  "name": "프론티어 식스",
+  "short_name": "프론티어 식스",
+  "description": "여섯 성계로 항로를 넓히는 우주 개척 카드게임 (컴퓨터와 1:1, 3라운드 합산, 오프라인)",
   "lang": "ko",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#1d1b19",
-  "theme_color": "#181614",
+  "background_color": "#10131c",
+  "theme_color": "#0b0d14",
   "icons": [
     {
       "src": "icon-192.png",

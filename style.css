@@ -1,8 +1,8 @@
 :root {
-  --bg: #1d1b19;
-  --panel: #2a2724;
-  --text: #f0ebe3;
-  --muted: #a39a8c;
+  --bg: #10131c;
+  --panel: #1a1e2b;
+  --text: #e8ecf5;
+  --muted: #98a0b8;
   --accent: #f2b84b;
   --yellow: #e8b923;
   --white: #e9e6df;
@@ -31,7 +31,7 @@ button:disabled { opacity: .6; cursor: default; }
 
 /* 상단 탭 */
 #tabs {
-  display: flex; align-items: center; gap: 4px; background: #181614; border-bottom: 1px solid #3a342d;
+  display: flex; align-items: center; gap: 4px; background: #0b0d14; border-bottom: 1px solid #2b3146;
   padding: calc(8px + var(--safe-t)) calc(16px + var(--safe-r)) 8px calc(16px + var(--safe-l));
   position: sticky; top: 0; z-index: 5;
 }
@@ -46,7 +46,7 @@ button:disabled { opacity: .6; cursor: default; }
 #join-form { display: flex; flex-direction: column; gap: 12px; text-align: left; }
 #join-form input {
   width: 100%; padding: 12px 10px; margin-top: 4px; border-radius: 6px;
-  border: 1px solid #4a443d; background: var(--panel); color: var(--text);
+  border: 1px solid #3a4160; background: var(--panel); color: var(--text);
   font: inherit; font-size: 16px; /* 16px 미만이면 iOS가 포커스 때 화면을 확대한다 */
   -webkit-appearance: none; appearance: none;
 }
@@ -54,18 +54,18 @@ button:disabled { opacity: .6; cursor: default; }
   padding: 12px; border: 0; border-radius: 6px; background: var(--accent); color: #222; font-weight: 700; min-height: 44px;
 }
 .error { color: #ff8a80; min-height: 1.2em; }
-fieldset.mode { border: 1px solid #3a342d; border-radius: 8px; padding: 10px 12px 12px; margin: 4px 0 0; display: flex; flex-direction: column; gap: 10px; }
+fieldset.mode { border: 1px solid #2b3146; border-radius: 8px; padding: 10px 12px 12px; margin: 4px 0 0; display: flex; flex-direction: column; gap: 10px; }
 fieldset.mode legend { color: var(--accent); font-weight: 700; padding: 0 6px; }
 .levels { display: flex; gap: 8px; }
-.levels label { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; border: 1px solid #4a443d; border-radius: 6px; cursor: pointer; }
+.levels label { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; border: 1px solid #3a4160; border-radius: 6px; cursor: pointer; }
 .levels label:has(input:checked) { border-color: var(--accent); background: rgba(242, 184, 75, .1); }
 .levels input { accent-color: var(--accent); width: 18px; height: 18px; margin: 0; }
-#solo-btn { padding: 12px; border: 0; border-radius: 6px; background: #4a443d; color: var(--text); font-weight: 700; min-height: 44px; }
+#solo-btn { padding: 12px; border: 0; border-radius: 6px; background: #3a4160; color: var(--text); font-weight: 700; min-height: 44px; }
 #leave-wrap { text-align: center; margin-top: 20px; }
 button.link { background: none; border: 0; color: var(--muted); text-decoration: underline; padding: 10px; min-height: 44px; }
 .note { color: var(--muted); font-size: .8rem; margin-top: 12px; }
 .muted { color: var(--muted); }
-button.ghost { background: none; border: 1px solid #4a443d; color: var(--text); padding: 10px 14px; border-radius: 6px; min-height: 44px; }
+button.ghost { background: none; border: 1px solid #3a4160; color: var(--text); padding: 10px 14px; border-radius: 6px; min-height: 44px; }
 
 /* 게임 화면 */
 #game {
@@ -87,7 +87,7 @@ button.ghost { background: none; border: 1px solid #4a443d; color: var(--text); 
 .zone { min-height: 118px; position: relative; border-radius: 6px; padding: 2px; }
 .zone.opp { display: flex; flex-direction: column-reverse; justify-content: flex-start; } /* 상대 원정대는 가운데에서 위로 쌓임 */
 .zone.mine { display: flex; flex-direction: column; }
-.zone.discard { min-height: 62px; background: #1f1c1a; border: 1px dashed #4a443d; display: flex; align-items: center; justify-content: center; }
+.zone.discard { min-height: 62px; background: #141826; border: 1px dashed #3a4160; display: flex; align-items: center; justify-content: center; }
 .zone .score { position: absolute; right: 4px; bottom: 2px; font-size: .75rem; color: var(--muted); }
 .zone.opp .score { top: 2px; bottom: auto; }
 .zone.target { outline: 2px solid var(--accent); outline-offset: -2px; cursor: pointer; background: #3a3327; }
@@ -97,45 +97,95 @@ button.ghost { background: none; border: 1px solid #4a443d; color: var(--text); 
 .zone.best { box-shadow: inset 0 0 0 2px var(--accent); background: rgba(242, 184, 75, .08); }
 .zone.best .score { color: var(--accent); font-weight: 800; }
 
+/* 카드 (트럼프식): 모서리 숫자(.idx.tl / .idx.br) + 가운데 성계 아이콘(.art) + 안쪽 테두리(::before)
+   --idx: 모서리 숫자 크기. 자리마다(손패·항로·시장) 다시 정한다. */
 .card {
-  position: relative; border-radius: 6px; border: 2px solid rgba(0,0,0,.35);
-  color: #fff; text-align: center; font-weight: 800; background: var(--c);
+  position: relative; overflow: hidden; border-radius: 7px; border: 1px solid rgba(0,0,0,.5);
+  color: var(--ink, #fff); font-weight: 800; line-height: 1;
+  background: radial-gradient(circle at 28% 18%, rgba(255,255,255,.3), transparent 55%), var(--c);
+  box-shadow: 0 1px 3px rgba(0,0,0,.55);
   -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; /* 길게 눌러도 메뉴 안 뜨게 */
 }
-.card.yellow { --c: var(--yellow); color: #3a2f00; }
-.card.white { --c: var(--white); color: #333; }
+.card::before {
+  content: ''; position: absolute; inset: 3px; border-radius: 4px; pointer-events: none;
+  border: 1px solid currentColor; opacity: .3;
+}
+.card.yellow { --c: var(--yellow); --ink: #3a2c00; }
+.card.white { --c: var(--white); --ink: #263040; }
 .card.blue { --c: var(--blue); }
 .card.green { --c: var(--green); }
 .card.red { --c: var(--red); }
 .card.purple { --c: var(--purple); }
+.card .idx { position: absolute; z-index: 1; font-size: var(--idx, .8rem); }
+.card .idx.tl { top: 4px; left: 5px; }
+.card .idx.br { bottom: 4px; right: 5px; transform: rotate(180deg); }
+.card .art { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+.card .art svg {
+  width: 50%; max-height: 60%; fill: none; stroke: currentColor; stroke-width: 1.8;
+  stroke-linecap: round; stroke-linejoin: round; opacity: .9;
+}
+.card .art svg .fill { fill: currentColor; stroke: none; }
+.card.wager .art svg { opacity: .45; }
+.card .band { /* 투자 계약 표시 띠 */
+  position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%);
+  background: rgba(0,0,0,.35); color: #fff; font-size: .6rem; padding: 2px 0; text-align: center; letter-spacing: .08em;
+}
+.card.yellow .band, .card.white .band { background: rgba(0,0,0,.6); }
+
+/* 항로: 겹쳐 쌓인 카드는 왼쪽 위 숫자만, 맨 끝 카드는 아이콘까지 */
 .stack { display: flex; flex-direction: column; }
 .zone.opp .stack { flex-direction: column-reverse; }
-.stack .card { height: 20px; line-height: 16px; font-size: .8rem; margin-bottom: -2px; }
-.stack .card:last-child { height: 34px; line-height: 30px; margin-bottom: 0; }
-.stack .card .tag, .discard .card .tag { display: none; } /* 작은 카드에선 $만 표시 */
-.discard .card { width: 100%; height: 48px; line-height: 44px; font-size: 1.2rem; }
-.discard .count { position: absolute; left: 6px; top: 2px; font-size: .7rem; color: var(--muted); }
-.empty-label { color: #6b6358; font-size: .75rem; text-align: center; }
+.stack .card { height: 20px; margin-bottom: -3px; --idx: .75rem; flex-shrink: 0; }
+.stack .card::before { inset: 2px; }
+.stack .card .idx.tl { top: 3px; left: 4px; }
+.stack .card .art, .stack .card .idx.br, .stack .card .band { display: none; }
+.stack .card:last-child { height: 36px; margin-bottom: 0; }
+.stack .card:last-child .art { display: flex; justify-content: flex-end; padding-right: 4px; }
+.stack .card:last-child .art svg { width: auto; height: 62%; max-height: none; }
+
+/* 중고 시장: 맨 위 한 장 */
+.discard .card { width: 100%; height: 48px; --idx: .9rem; }
+.discard .card .band, .discard .card .idx.br { display: none; }
+.discard .card .art svg { width: auto; height: 58%; max-height: none; }
+.discard .count { position: absolute; z-index: 2; right: 4px; bottom: 2px; font-size: .65rem; color: var(--text); background: rgba(0,0,0,.55); padding: 1px 4px; border-radius: 6px; }
+.empty-label { color: #5f6785; font-size: .7rem; text-align: center; white-space: pre-line; line-height: 1.3; }
 
 /* 손패: 화면 폭에 맞춰 한 줄로 줄어든다 */
 #hand-wrap { margin-top: 12px; }
 #hand { display: flex; gap: 6px; justify-content: center; }
 #hand .card {
   flex: 0 1 62px; min-width: 0; aspect-ratio: 62 / 92;
-  display: flex; align-items: center; justify-content: center;
-  font-size: clamp(1rem, 5vw, 1.6rem); cursor: pointer; transition: transform .1s;
+  --idx: clamp(.75rem, 3.4vw, 1.05rem);
+  cursor: pointer; transition: transform .1s;
   touch-action: manipulation; /* 빠른 연속 탭에서 확대 방지 */
 }
 #hand .card.selected { transform: translateY(-12px); outline: 3px solid var(--accent); }
 #hand .card.unplayable { opacity: .85; }
-.card .tag { position: absolute; top: 2px; left: 0; right: 0; font-size: .65rem; line-height: 1; }
 #hint { text-align: center; color: var(--muted); font-size: .9rem; min-height: 1.4em; margin-top: 8px; }
 
 #side { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
-#deck {
-  padding: 10px 20px; min-height: 44px; border-radius: 8px; border: 2px solid #4a443d; background: #3a342d; color: var(--text); font-weight: 700;
+/* 탐사 덱 = 카드 뒷면 (별이 흩어진 성운 무늬) */
+#deck.card-back {
+  width: 60px; height: 84px; padding: 0; border-radius: 8px; border: 2px solid #3a4160; color: var(--text);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  background:
+    radial-gradient(1px 1px at 18% 24%, #fff 99%, transparent),
+    radial-gradient(1px 1px at 72% 16%, #fff 99%, transparent),
+    radial-gradient(1.5px 1.5px at 82% 64%, #cfd8ff 99%, transparent),
+    radial-gradient(1px 1px at 30% 78%, #fff 99%, transparent),
+    radial-gradient(1px 1px at 55% 45%, #e6d4ff 99%, transparent),
+    radial-gradient(circle at 50% 38%, #3b2f6b, #141729 72%);
+  box-shadow: 3px 3px 0 -1px #1a1e2b, 3px 3px 0 0 #3a4160; /* 뒤에 한 장 더 쌓인 느낌 */
 }
-#deck.target { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+#deck .deck-label { font-size: .6rem; color: var(--muted); font-weight: 600; }
+#deck b { font-size: 1.25rem; }
+#deck.target { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent), 3px 3px 0 -1px #1a1e2b; }
+
+/* 무르기 (서버판 전용): 카드를 낸 뒤 3초 동안만 보인다 */
+#undo {
+  padding: 10px 14px; min-height: 44px; border-radius: 6px; border: 2px solid var(--accent);
+  background: rgba(242, 184, 75, .12); color: var(--accent); font-weight: 800; font-variant-numeric: tabular-nums;
+}
 #opp-info { color: var(--muted); font-size: .9rem; }
 #show-result { padding: 10px 14px; min-height: 44px; border: 0; border-radius: 6px; background: var(--accent); color: #222; font-weight: 700; }
 
@@ -156,10 +206,10 @@ button.ghost { background: none; border: 1px solid #4a443d; color: var(--text); 
 #result-sub { color: var(--muted); margin: 0 0 12px; font-size: .9rem; }
 .actions { display: flex; gap: 8px; justify-content: center; margin-top: 16px; }
 .tbl { width: 100%; border-collapse: collapse; font-size: .9rem; }
-.tbl th, .tbl td { padding: 6px 8px; text-align: right; border-bottom: 1px solid #3a342d; white-space: nowrap; }
+.tbl th, .tbl td { padding: 6px 8px; text-align: right; border-bottom: 1px solid #2b3146; white-space: nowrap; }
 .tbl th:first-child, .tbl td:first-child { text-align: left; }
 .tbl th { color: var(--muted); font-weight: 600; }
-.tbl tr.sum td { font-weight: 800; border-top: 2px solid #4a443d; }
+.tbl tr.sum td { font-weight: 800; border-top: 2px solid #3a4160; }
 .tbl tr.current td { color: var(--accent); }
 .tbl td.best-cell { color: var(--accent); font-weight: 800; }
 .dot { display: inline-block; width: .7em; height: .7em; border-radius: 50%; margin-right: 6px; background: var(--c); }
@@ -181,7 +231,7 @@ button.ghost { background: none; border: 1px solid #4a443d; color: var(--text); 
 .match-head .win { color: var(--accent); font-weight: 700; }
 .match-head .meta { color: var(--muted); font-size: .8rem; margin-left: auto; }
 .rounds { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
-.round-chip { font-size: .8rem; color: var(--muted); background: #1f1c1a; padding: 2px 8px; border-radius: 10px; }
+.round-chip { font-size: .8rem; color: var(--muted); background: #141826; padding: 2px 8px; border-radius: 10px; }
 .round-chip .dot { margin: 0 2px; }
 .round-chip .vs { margin: 0 2px; }
 
@@ -191,6 +241,7 @@ button.ghost { background: none; border: 1px solid #4a443d; color: var(--text); 
   opacity: 0; transition: opacity .2s; pointer-events: none;
 }
 #toast.show { opacity: 1; }
+#toast.info { background: #2f4f8a; }
 
 /* 휴대폰 세로 */
 @media (max-width: 560px) {
@@ -199,10 +250,12 @@ button.ghost { background: none; border: 1px solid #4a443d; color: var(--text); 
   .col { padding: 2px; border-radius: 6px; }
   .zone { min-height: 96px; }
   .zone.discard { min-height: 52px; }
-  .discard .card { height: 40px; line-height: 36px; font-size: 1rem; }
-  .discard .count { left: 2px; font-size: .6rem; }
+  .discard .card { height: 40px; --idx: .8rem; }
+  .discard .count { right: 2px; font-size: .55rem; }
   .empty-label { font-size: .6rem; }
-  .stack .card { font-size: .7rem; border-width: 1px; }
+  .stack .card { --idx: .7rem; }
+  .card .band { font-size: .5rem; letter-spacing: 0; }
+  #deck.card-back { width: 52px; height: 72px; }
   .zone .score { font-size: .65rem; right: 2px; }
   #hand { gap: 4px; }
   #hand .card.selected { transform: translateY(-8px); }
@@ -219,9 +272,11 @@ button.ghost { background: none; border: 1px solid #4a443d; color: var(--text); 
   #game { padding-top: 2px; }
   .zone { min-height: 52px; }
   .zone.discard { min-height: 36px; }
-  .discard .card { height: 30px; line-height: 26px; font-size: .9rem; }
+  .discard .card { height: 30px; --idx: .75rem; }
   #side { margin-top: 6px; }
-  #deck, #show-result { min-height: 36px; padding: 4px 16px; }
+  #deck.card-back { width: 40px; height: 56px; gap: 0; }
+  #deck .deck-label { display: none; }
+  #show-result, #undo { min-height: 36px; padding: 4px 16px; }
   #hand-wrap { margin-top: 6px; }
   #hand .card { flex-basis: 46px; }
   #hint { min-height: 0; margin-top: 4px; font-size: .8rem; }
