@@ -25,6 +25,10 @@
     <section id="lobby">
       <h1>프론티어 식스</h1>
       <p class="sub" id="lobby-sub">여섯 성계로 항로를 넓히는 우주 개척 카드게임 · 1:1 · 3라운드 합산</p>
+      <div id="resume" hidden>
+        <button type="button" id="resume-btn">▶ 진행 중인 게임 이어 하기</button>
+        <p class="note" id="resume-note"></p>
+      </div>
       <form id="join-form" novalidate>
         <label>이름 <input id="name" maxlength="12" required autocomplete="off"></label>
 
@@ -39,6 +43,7 @@
           <div class="levels" role="radiogroup" aria-label="난이도">
             <label><input type="radio" name="level" value="easy"> 쉬움</label>
             <label><input type="radio" name="level" value="normal" checked> 보통</label>
+            <label><input type="radio" name="level" value="hard"> 어려움</label>
           </div>
           <button type="button" id="solo-btn">컴퓨터와 대전</button>
         </fieldset>

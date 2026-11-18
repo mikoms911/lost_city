@@ -61,6 +61,9 @@ fieldset.mode legend { color: var(--accent); font-weight: 700; padding: 0 6px; }
 .levels label:has(input:checked) { border-color: var(--accent); background: rgba(242, 184, 75, .1); }
 .levels input { accent-color: var(--accent); width: 18px; height: 18px; margin: 0; }
 #solo-btn { padding: 12px; border: 0; border-radius: 6px; background: #3a4160; color: var(--text); font-weight: 700; min-height: 44px; }
+#resume { border: 1px solid var(--accent); border-radius: 8px; padding: 10px 12px; margin-bottom: 12px; background: rgba(242, 184, 75, .08); }
+#resume-btn { width: 100%; padding: 12px; border: 0; border-radius: 6px; background: var(--accent); color: #10131c; font-weight: 700; min-height: 44px; }
+#resume .note { margin: 8px 0 0; text-align: center; }
 #leave-wrap { text-align: center; margin-top: 20px; }
 button.link { background: none; border: 0; color: var(--muted); text-decoration: underline; padding: 10px; min-height: 44px; }
 .note { color: var(--muted); font-size: .8rem; margin-top: 12px; }

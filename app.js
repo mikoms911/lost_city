@@ -118,6 +118,9 @@ function connect() {
       if (!state) {
         $('lobby-error').textContent = msg.message;
         try { joinStorage().removeItem('lc-join'); } catch {} // 실패한 입장 정보로 자동 재입장을 반복하지 않도록
+        const r = readResume();
+        if (r && joinInfo && r.room === joinInfo.room) clearResume(); // 이어 할 게임이 이미 없어졌다
+        showResume();
       } else toast(msg.message);
       return;
     }
@@ -133,6 +136,7 @@ function connect() {
         joinInfo = { name: joinInfo.name, room: msg.room, token: joinInfo.token };
         saveJoin();
       }
+      saveResume(msg);
       if (!msg.game || !msg.game.myTurn || msg.game.phase !== 'play') selectedId = null;
       if (state.game && state.game.myTurn && !prevTurn) document.title = '● 내 차례 - 프론티어 식스';
       else if (!state.game || !state.game.myTurn) document.title = '프론티어 식스';
@@ -177,6 +181,59 @@ function saveJoin() {
   try { joinStorage().setItem('lc-join', JSON.stringify({ name: joinInfo.name, room: joinInfo.room })); } catch {}
 }
 
+// ---------- 이어 하기 (기기 단위) ----------
+// lc-join(탭 단위)은 새로고침 때 자동 재입장용. lc-resume은 기기에 남아 탭·브라우저를 닫거나 '나가기'한 뒤에도
+// 로비에서 버튼으로 같은 자리에 돌아오게 한다. 자동으로 들어가지 않으므로 한 PC의 두 탭은 여전히 서로 다른 플레이어.
+const RESUME_KEY = 'lc-resume';
+
+function readResume() {
+  try {
+    const r = JSON.parse(localStorage.getItem(RESUME_KEY) || 'null');
+    return r && r.room && r.name && r.token ? r : null;
+  } catch {
+    return null;
+  }
+}
+
+function clearResume() {
+  try { localStorage.removeItem(RESUME_KEY); } catch {}
+}
+
+// 경기 중이면 이 기기의 '이어 하기' 정보를 갱신, 경기가 끝났으면 지운다
+function saveResume(msg) {
+  if (!joinInfo || !msg.room) return;
+  if (!msg.match || msg.match.over) {
+    const r = readResume();
+    if (r && r.room === msg.room) clearResume();
+    return;
+  }
+  const info = {
+    name: joinInfo.name, room: msg.room, token: joinInfo.token,
+    opp: msg.names && msg.names.opp, round: msg.match.round, solo: !!msg.solo,
+  };
+  try { localStorage.setItem(RESUME_KEY, JSON.stringify(info)); } catch {}
+}
+
+function showResume() {
+  const r = readResume();
+  $('resume').hidden = !r;
+  if (!r) return;
+  const who = r.opp ? `상대 ${r.opp}` : '상대 기다리는 중';
+  $('resume-note').textContent = `${r.name} · ${who} · ${r.round || 1}라운드${r.solo ? '' : ` · 방 ${r.room}`}`;
+}
+
+$('resume-btn').addEventListener('click', () => {
+  const r = readResume();
+  if (!r) return showResume();
+  // 저장해 둔 토큰을 이 탭의 토큰으로 삼아야 같은 자리로 들어가고, 이후 새로고침도 이어진다
+  try { sessionStorage.setItem('lc-token', r.token); } catch {}
+  $('lobby-error').textContent = '';
+  $('name').value = r.name;
+  joinInfo = { name: r.name, room: r.room, token: r.token };
+  saveJoin();
+  connect();
+});
+
 function readName() {
   const name = $('name').value.trim();
   if (!name) {
@@ -220,7 +277,9 @@ $('leave').addEventListener('click', () => {
   const btn = $('leave');
   if (!btn.dataset.armed) {
     btn.dataset.armed = '1';
-    btn.textContent = state && state.solo ? '한 번 더 누르면 나갑니다' : '한 번 더 누르면 나갑니다 (상대에게는 연결 끊김으로 보임)';
+    btn.textContent = state && state.solo
+      ? '한 번 더 누르면 나갑니다 (로비에서 이어 하기 가능)'
+      : '한 번 더 누르면 나갑니다 (상대에게는 연결 끊김, 로비에서 이어 하기 가능)';
     setTimeout(() => { delete btn.dataset.armed; btn.textContent = '나가기'; }, 3000);
     return;
   }
@@ -241,6 +300,7 @@ $('leave').addEventListener('click', () => {
   $('game').hidden = true;
   $('result').hidden = true;
   $('lobby').hidden = false;
+  showResume();
 });
 
 // 새로고침 시 같은 탭이면 자동 재입장
@@ -254,6 +314,7 @@ $('leave').addEventListener('click', () => {
       connect();
     }
   } catch {}
+  showResume();
 })();
 
 function send(msg) {
